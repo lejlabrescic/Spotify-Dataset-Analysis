@@ -18,11 +18,10 @@ public class GenreCount {
 
         public void map(LongWritable key, Text value, Context context)
                 throws IOException, InterruptedException {
-            // Assuming a CSV format with a header line
             if (key.get() > 0) {
                 String[] fields = value.toString().split(",");
                 if (fields.length >= 5) {
-                    String genre = fields[6]; // Assuming genre is at index 5
+                    String genre = fields[6];
                     genreKey.set(genre);
                     context.write(genreKey, one);
                 }
@@ -46,10 +45,10 @@ public class GenreCount {
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "song count by genre");
+        Job job = Job.getInstance(conf, "Top 10 Genre by Songs:");
         job.setJarByClass(SpotifyGenres.class);
         job.setMapperClass(SongMapper.class);
-        job.setCombinerClass(GenreReducer.class); // Optional combiner to optimize network traffic
+        job.setCombinerClass(GenreReducer.class);
         job.setReducerClass(GenreReducer.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);

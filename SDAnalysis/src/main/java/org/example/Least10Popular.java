@@ -22,23 +22,19 @@ public class Least10Popular {
 
         public void map(LongWritable key, Text value, Context context)
                 throws IOException, InterruptedException {
-            // Assuming a CSV format with a header line
             if (key.get() > 0) {
                 String[] fields = value.toString().split(",");
                 if (fields.length >= 4) {
                     String artist = fields[1];
                     String song = fields[2];
-                    String popularityStr = fields[4]; // Assuming popularity is at index 4
-                    // Additional check to ensure the popularityStr is a valid integer
+                    String popularityStr = fields[4];
                     try {
                         int songPopularity = Integer.parseInt(popularityStr);
                         artistAndSongKey.set(artist + " - " + song);
                         popularity.set(songPopularity);
                         context.write(artistAndSongKey, popularity);
                     } catch (NumberFormatException e) {
-                        // Handle or log the invalid popularity value
-                        // For example, you can skip this record or log a warning
-                        System.err.println("Invalid popularity value for artist: " + artist);
+                        printStackTrace() ;
                     }
                 }
             }
@@ -61,7 +57,6 @@ public class Least10Popular {
             }
             leastPopularityMap.put(popularitySum, new Text(key));
 
-            // Keep only the top 10 least popular elements in the map
             if (leastPopularityMap.size() > 10) {
                 leastPopularityMap.pollLastEntry();
             }
@@ -77,7 +72,7 @@ public class Least10Popular {
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "top 10 least popular songs");
+        Job job = Job.getInstance(conf, "10 Least Popular Songs in the Dataset:");
         job.setJarByClass(SpotifyPopularities.class);
         job.setMapperClass(SongMapper.class);
         job.setReducerClass(PopularityReducer.class);

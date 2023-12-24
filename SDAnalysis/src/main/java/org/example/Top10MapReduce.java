@@ -22,23 +22,19 @@ public class Top10MapReduce {
 
         public void map(LongWritable key, Text value, Context context)
                 throws IOException, InterruptedException {
-            // Assuming a CSV format with a header line
             if (key.get() > 0) {
                 String[] fields = value.toString().split(",");
                 if (fields.length >= 4) {
                     String artist = fields[1];
                     String song = fields[2];
-                    String popularityStr = fields[4]; // Assuming popularity is at index 4
-                    // Additional check to ensure the popularityStr is a valid integer
+                    String popularityStr = fields[4];
                     try {
                         int songPopularity = Integer.parseInt(popularityStr);
                         artistAndSongKey.set(artist + " - " + song);
                         popularity.set(songPopularity);
                         context.write(artistAndSongKey, popularity);
                     } catch (NumberFormatException e) {
-                        // Handle or log the invalid popularity value
-                        // For example, you can skip this record or log a warning
-                        System.err.println("Invalid popularity value for artist: " + artist);
+                        printStackTrace();
                     }
                 }
             }
@@ -50,7 +46,7 @@ public class Top10MapReduce {
 
         @Override
         protected void setup(Context context) throws IOException, InterruptedException {
-            popularityMap = new TreeMap<>(Comparator.reverseOrder()); // Sort in descending order
+            popularityMap = new TreeMap<>(Comparator.reverseOrder());
         }
 
         public void reduce(Text key, Iterable<IntWritable> values, Context context)
@@ -61,7 +57,6 @@ public class Top10MapReduce {
             }
             popularityMap.put(popularitySum, new Text(key));
 
-            // Keep only the top 10 elements in the map
             if (popularityMap.size() > 10) {
                 popularityMap.pollLastEntry();
             }
@@ -77,7 +72,7 @@ public class Top10MapReduce {
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "Top 10 popular songs:");
+        Job job = Job.getInstance(conf, "Top 10 Songs by Popularity");
         job.setJarByClass(Top10MapReduce.class);
         job.setMapperClass(SongMapper.class);
         job.setReducerClass(PopularityReducer.class);
